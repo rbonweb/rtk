@@ -507,6 +507,17 @@ pub const RULES: &[RtkRule] = &[
         savings_pct: 65.0,
         ..RtkRule::DEFAULT
     },
+    // Generic python before mypy/pytest so specific rules (last-match-wins)
+    // still override this one for `python -m mypy` / `python -m pytest`.
+    RtkRule {
+        pattern: r"^python3?(?:\s|$)",
+        rtk_cmd: "rtk python",
+        pipeline_safety: PipelineSafety::ProducerOnly,
+        rewrite_prefixes: &["python", "python3"],
+        category: "Python",
+        savings_pct: 40.0,
+        ..RtkRule::DEFAULT
+    },
     RtkRule {
         pattern: r"^(python3?\s+-m\s+)?mypy(\s|$)",
         rtk_cmd: "rtk mypy",
@@ -1133,6 +1144,15 @@ pub const RULES: &[RtkRule] = &[
         rewrite_prefixes: &["liquibase"],
         category: "Infra",
         savings_pct: 65.0,
+        ..RtkRule::DEFAULT
+    },
+    RtkRule {
+        pattern: r"^node(?:\s|$)",
+        rtk_cmd: "rtk node",
+        pipeline_safety: PipelineSafety::ProducerOnly,
+        rewrite_prefixes: &["node"],
+        category: "Tests",
+        savings_pct: 40.0,
         ..RtkRule::DEFAULT
     },
 ];

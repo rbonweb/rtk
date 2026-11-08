@@ -1,0 +1,21 @@
+[filters.node]
+description = "Compact node output — strip npm banners, dedupe require stack noise"
+match_command = "^node\\b"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^\\s*at .*:\\d+:\\d+",
+  "^\\s*node:.*Warning.*",
+]
+max_lines = 40
+truncate_lines_at = 120
+
+[[tests.node]]
+name = "strips blank lines"
+input = "hello\n\nworld\n"
+expected = "hello\nworld"
+
+[[tests.node]]
+name = "empty passthrough"
+input = ""
+expected = ""

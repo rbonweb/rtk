@@ -117,7 +117,7 @@ fn file_windows_book_the_window_on_both_sides() {
     ] {
         let home = home();
         let path = write(home.path(), "plain.txt", &text);
-        let mut args = vec![path.as_str()];
+        let mut args = vec!["--level", "none", path.as_str()];
         args.extend_from_slice(window);
         let (_, row) = read(home.path(), &args, None);
         assert_eq!(
@@ -141,7 +141,7 @@ fn stdin_windows_book_the_window_on_both_sides() {
         &["-n", "--tail-lines", "3"],
     ] {
         let home = home();
-        let mut args = vec!["-"];
+        let mut args = vec!["--level", "none", "-"];
         args.extend_from_slice(window);
         let (_, row) = read(home.path(), &args, Some(&text));
         assert_eq!(

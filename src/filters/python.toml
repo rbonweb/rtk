@@ -1,0 +1,20 @@
+[filters.python]
+description = "Compact python3 output — strip blank lines and traceback noise headers"
+match_command = "^(python3?|uv\\s+run\\s+python)\\b"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Traceback \\(most recent call last\\):",
+]
+max_lines = 40
+truncate_lines_at = 120
+
+[[tests.python]]
+name = "strips blank lines"
+input = "hello\n\nworld\n"
+expected = "hello\nworld"
+
+[[tests.python]]
+name = "empty passthrough"
+input = ""
+expected = ""

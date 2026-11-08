@@ -3579,7 +3579,7 @@ mod tests {
         let output = &v["hookSpecificOutput"];
         assert_eq!(
             output["updatedInput"]["command"],
-            r#"bash -c "rtk read foo --head-lines 10 && rtk grep -R bar .""#
+            r#"bash -c "rtk read foo --level none --head-lines 10 && rtk grep -R bar .""#
         );
         assert!(output.get("permissionDecision").is_none());
     }
@@ -3647,7 +3647,7 @@ mod tests {
             HookDecision::AskRewrite(rewritten, AskOwner::Host) => {
                 assert_eq!(
                     rewritten,
-                    r#"bash -c "rtk read foo --head-lines 10 && rtk grep -R bar .""#
+                    r#"bash -c "rtk read foo --level none --head-lines 10 && rtk grep -R bar .""#
                 )
             }
             _ => panic!("supported shell wrapper must rewrite with confirmation"),

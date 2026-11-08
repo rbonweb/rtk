@@ -34,6 +34,8 @@ fn read_windows_preserve_non_utf8_files() {
     ] {
         let output = common::rtk_command()
             .arg("read")
+            .arg("--level")
+            .arg("none")
             .arg(&file)
             .args([flag, "2"])
             .output()
@@ -68,11 +70,13 @@ fn read_windows_preserve_binary_boundaries_for_files_and_stdin() {
         ] {
             let from_file = common::rtk_command()
                 .arg("read")
+                .arg("--level")
+                .arg("none")
                 .arg(&file)
                 .args([flag, count])
                 .output()
                 .expect("run rtk read");
-            let from_stdin = read_stdin(input, &[flag, count]);
+            let from_stdin = read_stdin(input, &["--level", "none", flag, count]);
             for output in [from_file, from_stdin] {
                 assert!(
                     output.status.success(),
@@ -96,10 +100,12 @@ fn plain_reads_pass_non_utf8_bytes_through_for_files_and_stdin() {
         fs::write(&file, input).expect("write non-UTF-8 file");
         let from_file = common::rtk_command()
             .arg("read")
+            .arg("--level")
+            .arg("none")
             .arg(&file)
             .output()
             .expect("run rtk read");
-        let from_stdin = read_stdin(input, &[]);
+        let from_stdin = read_stdin(input, &["--level", "none"]);
         for output in [from_file, from_stdin] {
             assert!(output.status.success(), "{:?}", output.stderr);
             assert_eq!(output.stdout, input);
@@ -160,7 +166,7 @@ fn read_windows_accept_invalid_bytes_outside_the_selected_window() {
         (b"valid\n\xff\n".as_slice(), "--head-lines"),
         (b"\xff\nvalid\n".as_slice(), "--tail-lines"),
     ] {
-        let output = read_stdin(input, &[flag, "1"]);
+        let output = read_stdin(input, &["--level", "none", flag, "1"]);
         assert!(output.status.success(), "{flag}: {:?}", output.stderr);
         assert_eq!(output.stdout, b"valid\n");
     }
@@ -179,11 +185,11 @@ fn read_windows_still_apply_text_filtering_and_line_numbers() {
             "fn gamma() {}",
         ),
         (
-            ["--head-lines", "1", "--line-numbers"].as_slice(),
+            ["--head-lines", "1", "--line-numbers", "--level", "none"].as_slice(),
             "1\t// comment\n",
         ),
         (
-            ["--tail-lines", "1", "--line-numbers"].as_slice(),
+            ["--tail-lines", "1", "--line-numbers", "--level", "none"].as_slice(),
             "1\tfn gamma() {}\n",
         ),
     ] {
@@ -233,7 +239,10 @@ fn rewritten_head_spellings_match_native_on_non_utf8_files() {
         let count = if flags.is_empty() { "10" } else { "2" };
         assert_eq!(
             rewritten.trim(),
-            format!("rtk read {} --head-lines {count}", file.display())
+            format!(
+                "rtk read {} --level none --head-lines {count}",
+                file.display()
+            )
         );
         let actual = common::rtk_command()
             .args(

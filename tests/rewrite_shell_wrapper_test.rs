@@ -21,7 +21,7 @@ fn bash_command_string_rewrites_inner_commands() {
     assert_eq!(output.status.code(), Some(3));
     assert_eq!(
         String::from_utf8_lossy(&output.stdout),
-        r#"bash -c "rtk read foo --head-lines 10 && rtk grep -R bar .""#
+        r#"bash -c "rtk read foo --level none --head-lines 10 && rtk grep -R bar .""#
     );
     assert!(output.stderr.is_empty());
 }

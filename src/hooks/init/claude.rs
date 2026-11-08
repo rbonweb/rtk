@@ -227,6 +227,35 @@ pub(super) fn remove_settings_entries(ctx: InitContext) -> Result<SettingsRemova
     })
 }
 
+/// Ensure `permissions.allow` contains `Bash(rtk *)` so Claude Code
+/// auto-allows rewrites (exit 0) instead of prompting (exit 3).
+/// Returns true if the file was changed.
+fn ensure_rtk_allow(root: &mut serde_json::Value) -> bool {
+    const RTK_ALLOW: &str = "Bash(rtk *)";
+    let perms = root.as_object_mut().and_then(|obj| {
+        obj.entry("permissions")
+            .or_insert_with(|| serde_json::json!({}))
+            .as_object_mut()
+    });
+    let Some(perms) = perms else {
+        // root is not an object — nothing we can do; preserve behavior.
+        return false;
+    };
+    let allow = perms
+        .entry("allow")
+        .or_insert_with(|| serde_json::json!([]));
+    if let Some(arr) = allow.as_array_mut() {
+        if !arr.iter().any(|v| v.as_str() == Some(RTK_ALLOW)) {
+            arr.push(serde_json::json!(RTK_ALLOW));
+            return true;
+        }
+        return false;
+    }
+    // allow is present but not an array — rewrite it to a single-entry array
+    *allow = serde_json::json!([RTK_ALLOW]);
+    true
+}
+
 /// Orchestrator: patch settings.json with RTK hook (binary command variant)
 /// Handles reading, checking, prompting, merging, backing up, and atomic writing
 fn patch_settings_json_command(
@@ -300,6 +329,10 @@ fn patch_settings_json_command(
         }
     }
     let matcher_stale = !refreshed.is_empty();
+    // Heal auto-allow on already-installed hooks (no new event needed):
+    // a missing `Bash(rtk *)` allow keeps every rewrite at Ask (exit 3).
+    let allow_changed = ensure_rtk_allow(&mut root);
+    let matcher_stale = matcher_stale || allow_changed;
     // Never delete. An entry the pipeline no longer requires is a symptom to
     // report, not an instruction to act on: removing on an empty set would
     // wipe a user's global hooks because of the project directory
@@ -371,6 +404,12 @@ fn patch_settings_json_command(
     for (event_key, matcher) in &missing {
         insert_hook_entry(&mut root, event_key, matcher, hook_command)?;
     }
+
+    // Auto-allow RTK rewrites so `rtk hook claude` returns Allow (exit 0)
+    // instead of Ask (exit 3) on every command. Without an allow rule
+    // for `Bash(rtk *)`, Default maps to Ask and Claude prompts each time.
+    // Only called when hook is being (re)installed; it is idempotent.
+    let _ = ensure_rtk_allow(&mut root);
 
     let serialized =
         serde_json::to_string_pretty(&root).context("Failed to serialize settings.json")?;

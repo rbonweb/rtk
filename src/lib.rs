@@ -199,8 +199,8 @@ enum Commands {
         /// Files to read (supports multiple, like cat)
         #[arg(required = true, num_args = 1..)]
         files: Vec<PathBuf>,
-        /// Filter: none (default, full content), minimal, aggressive
-        #[arg(short, long, default_value = "none")]
+        /// Filter: minimal (default, strip comments), none (full content), aggressive
+        #[arg(short, long, default_value = "minimal")]
         level: core::filter::FilterLevel,
         /// Structural preview capped at N lines (keeps signatures and imports;
         /// not the first N lines — use --head-lines for that)

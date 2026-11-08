@@ -1402,7 +1402,7 @@ fn rewrite_line_range(cmd: &str) -> Option<String> {
             let n = caps.get(1)?.as_str();
             let file = caps.get(2)?.as_str();
             if is_single_file_operand(file) {
-                return Some(format!("rtk read {} --head-lines {}", file, n));
+                return Some(format!("rtk read {} --level none --head-lines {}", file, n));
             }
             return None;
         }
@@ -1410,7 +1410,7 @@ fn rewrite_line_range(cmd: &str) -> Option<String> {
     if let Some(caps) = HEAD_BARE.captures(cmd) {
         let file = caps.get(1)?.as_str();
         if is_single_file_operand(file) {
-            return Some(format!("rtk read {} --head-lines 10", file));
+            return Some(format!("rtk read {} --level none --head-lines 10", file));
         }
     }
     if cmd.starts_with("head") {
@@ -1426,7 +1426,7 @@ fn rewrite_line_range(cmd: &str) -> Option<String> {
             let n = caps.get(1)?.as_str();
             let file = caps.get(2)?.as_str();
             if is_single_file_operand(file) {
-                return Some(format!("rtk read {} --tail-lines {}", file, n));
+                return Some(format!("rtk read {} --level none --tail-lines {}", file, n));
             }
             return None;
         }
@@ -3081,6 +3081,7 @@ mod tests {
                 "rtk mvn",
                 "rtk mypy",
                 "rtk next",
+                "rtk node",
                 "rtk paratest",
                 "rtk pest",
                 "rtk phpstan",
@@ -3093,6 +3094,7 @@ mod tests {
                 "rtk prettier",
                 "rtk ps",
                 "rtk pytest",
+                "rtk python",
                 "rtk quarto",
                 "rtk rake",
                 "rtk rg",
@@ -3838,6 +3840,20 @@ mod tests {
     #[test]
     fn test_rewrite_ignored_cd() {
         assert_eq!(rewrite_command_no_prefixes("cd /tmp", &[]), None);
+    }
+
+    #[test]
+    fn test_rewrite_cd_does_not_poison_next_segment() {
+        // `cd` is Ignored per-segment; a following supported command
+        // must still be rewritten (cd stays raw as the prefix segment).
+        assert_eq!(
+            rewrite_command_no_prefixes("cd /tmp && grep foo bar", &[]),
+            Some("cd /tmp && rtk grep foo bar".into())
+        );
+        assert_eq!(
+            rewrite_command_no_prefixes("cd /tmp; git status", &[]),
+            Some("cd /tmp; rtk git status".into())
+        );
     }
 
     #[test]
@@ -4972,7 +4988,7 @@ mod tests {
         // A non-excluded inner command still rewrites through the wrapper.
         assert_eq!(
             rewrite_command_no_prefixes("uv run head -20 src/main.rs", &["cat".to_string()]),
-            Some("uv run rtk read src/main.rs --head-lines 20".into())
+            Some("uv run rtk read src/main.rs --level none --head-lines 20".into())
         );
     }
 
@@ -5036,7 +5052,7 @@ mod tests {
         );
         assert_eq!(
             rewrite_command_no_prefixes("uv run bash -c 'python script.py'", &excluded),
-            Some("rtk uv run bash -c 'python script.py'".into())
+            Some("uv run bash -c 'rtk python script.py'".into())
         );
     }
 
@@ -5044,16 +5060,16 @@ mod tests {
     fn test_head_tail_rewrite_when_not_excluded() {
         assert_eq!(
             rewrite_command_no_prefixes("head -20 src/main.rs", &["cat".to_string()]),
-            Some("rtk read src/main.rs --head-lines 20".into())
+            Some("rtk read src/main.rs --level none --head-lines 20".into())
         );
     }
 
     #[test]
     fn test_rewrite_head_numeric_flag() {
-        // head -20 file → rtk read file --head-lines 20 (not rtk read -20 file)
+        // head -20 file → rtk read file --level none --head-lines 20 (not rtk read -20 file)
         assert_eq!(
             rewrite_command_no_prefixes("head -20 src/main.rs", &[]),
-            Some("rtk read src/main.rs --head-lines 20".into())
+            Some("rtk read src/main.rs --level none --head-lines 20".into())
         );
     }
 
@@ -5140,11 +5156,11 @@ mod tests {
     fn test_rewrite_head_operand_after_operator_split() {
         assert_eq!(
             rewrite_command_no_prefixes("head -n 1 f;rm", &[]),
-            Some("rtk read f --head-lines 1;rm".into())
+            Some("rtk read f --level none --head-lines 1;rm".into())
         );
         assert_eq!(
             rewrite_command_no_prefixes("head -n 1 a&b", &[]),
-            Some("rtk read a --head-lines 1&b".into())
+            Some("rtk read a --level none --head-lines 1&b".into())
         );
     }
 
@@ -5262,16 +5278,16 @@ mod tests {
     fn test_rewrite_head_redirect_suffix_keeps_flag_value() {
         assert_eq!(
             rewrite_command_no_prefixes("head -n 1 a>b", &[]),
-            Some("rtk read a --head-lines 1 >b".into())
+            Some("rtk read a --level none --head-lines 1 >b".into())
         );
         assert_eq!(
             rewrite_command_no_prefixes("tail -n 1 a>b", &[]),
-            Some("rtk read a --tail-lines 1 >b".into())
+            Some("rtk read a --level none --tail-lines 1 >b".into())
         );
         // An already-spaced suffix must not gain a second space.
         assert_eq!(
             rewrite_command_no_prefixes("head -n 1 a > b", &[]),
-            Some("rtk read a --head-lines 1 > b".into())
+            Some("rtk read a --level none --head-lines 1 > b".into())
         );
     }
 
@@ -5281,17 +5297,23 @@ mod tests {
         for (cmd, want) in [
             (
                 "head -10 /tmp/seq.txt",
-                "rtk read /tmp/seq.txt --head-lines 10",
+                "rtk read /tmp/seq.txt --level none --head-lines 10",
             ),
-            ("head ./a-b_c.txt", "rtk read ./a-b_c.txt --head-lines 10"),
-            ("head ~/x.txt", "rtk read ~/x.txt --head-lines 10"),
+            (
+                "head ./a-b_c.txt",
+                "rtk read ./a-b_c.txt --level none --head-lines 10",
+            ),
+            (
+                "head ~/x.txt",
+                "rtk read ~/x.txt --level none --head-lines 10",
+            ),
             (
                 "head /tmp/a.b.c-d_e.txt",
-                "rtk read /tmp/a.b.c-d_e.txt --head-lines 10",
+                "rtk read /tmp/a.b.c-d_e.txt --level none --head-lines 10",
             ),
             (
                 "head src/日本語.rs",
-                "rtk read src/日本語.rs --head-lines 10",
+                "rtk read src/日本語.rs --level none --head-lines 10",
             ),
         ] {
             assert_eq!(
@@ -5307,7 +5329,7 @@ mod tests {
     fn test_rewrite_tail_plain_operand_still_rewrites() {
         assert_eq!(
             rewrite_command_no_prefixes("tail -20 src/main.rs", &[]),
-            Some("rtk read src/main.rs --tail-lines 20".into())
+            Some("rtk read src/main.rs --level none --tail-lines 20".into())
         );
     }
 
@@ -5315,7 +5337,7 @@ mod tests {
     fn test_rewrite_head_n_space_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("head -n 50 src/lib.rs", &[]),
-            Some("rtk read src/lib.rs --head-lines 50".into())
+            Some("rtk read src/lib.rs --level none --head-lines 50".into())
         );
     }
 
@@ -5323,7 +5345,7 @@ mod tests {
     fn test_rewrite_head_lines_space_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("head --lines 50 src/lib.rs", &[]),
-            Some("rtk read src/lib.rs --head-lines 50".into())
+            Some("rtk read src/lib.rs --level none --head-lines 50".into())
         );
     }
 
@@ -5344,7 +5366,7 @@ mod tests {
     fn test_rewrite_head_lines_long_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("head --lines=50 src/lib.rs", &[]),
-            Some("rtk read src/lib.rs --head-lines 50".into())
+            Some("rtk read src/lib.rs --level none --head-lines 50".into())
         );
     }
 
@@ -5354,7 +5376,7 @@ mod tests {
         // rather than dumping the whole file.
         assert_eq!(
             rewrite_command_no_prefixes("head src/main.rs", &[]),
-            Some("rtk read src/main.rs --head-lines 10".into())
+            Some("rtk read src/main.rs --level none --head-lines 10".into())
         );
     }
 
@@ -5371,7 +5393,7 @@ mod tests {
     fn test_rewrite_tail_numeric_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("tail -20 src/main.rs", &[]),
-            Some("rtk read src/main.rs --tail-lines 20".into())
+            Some("rtk read src/main.rs --level none --tail-lines 20".into())
         );
     }
 
@@ -5379,7 +5401,7 @@ mod tests {
     fn test_rewrite_tail_n_space_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("tail -n 12 src/lib.rs", &[]),
-            Some("rtk read src/lib.rs --tail-lines 12".into())
+            Some("rtk read src/lib.rs --level none --tail-lines 12".into())
         );
     }
 
@@ -5387,7 +5409,7 @@ mod tests {
     fn test_rewrite_tail_lines_long_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("tail --lines=7 src/lib.rs", &[]),
-            Some("rtk read src/lib.rs --tail-lines 7".into())
+            Some("rtk read src/lib.rs --level none --tail-lines 7".into())
         );
     }
 
@@ -5395,7 +5417,7 @@ mod tests {
     fn test_rewrite_tail_lines_space_flag() {
         assert_eq!(
             rewrite_command_no_prefixes("tail --lines 7 src/lib.rs", &[]),
-            Some("rtk read src/lib.rs --tail-lines 7".into())
+            Some("rtk read src/lib.rs --level none --tail-lines 7".into())
         );
     }
 
@@ -6116,7 +6138,7 @@ mod tests {
         let cases = vec![
             ("uv run pytest", "uv run rtk pytest"),
             ("uv run ruff check", "uv run rtk ruff check"),
-            ("uv run python script.py", "rtk uv run python script.py"),
+            ("uv run python script.py", "uv run rtk python script.py"),
             (
                 "uv run --project backend --extra dev python script.py",
                 "rtk uv run --project backend --extra dev python script.py",
@@ -8831,7 +8853,10 @@ mod tests {
     fn test_shell_wrapper_rewrites_bash_command_string() {
         assert_eq!(
             rewrite_command_no_prefixes(r#"bash -c "head foo && grep -R bar .""#, &[]),
-            Some(r#"bash -c "rtk read foo --head-lines 10 && rtk grep -R bar .""#.into())
+            Some(
+                r#"bash -c "rtk read foo --level none --head-lines 10 && rtk grep -R bar .""#
+                    .into()
+            )
         );
     }
 
