@@ -76,6 +76,22 @@ An upstream is a model endpoint, shared by tasks and [judges](./conditions.md#ju
 | `api_key_env` | the environment variable holding the key. Omit it for the provider's conventional variable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`), which `validate` names for you. A literal `api_key = "…"` does not load (E015) |
 | `api_key_command` | or run a command and take its stdout (keychain, vault) — the same shape as Claude Code's `apiKeyHelper`. It runs through `sh` on Linux/macOS and `cmd` on Windows, so a command written for Git Bash needs rewriting there, or an explicit `bash -c "…"`. An upstream with one is never reported as needing auth |
 | `timeout_secs` | default 30; set it lower for anything on the hook path |
+| `headers` | optional table of extra HTTP headers sent with every call to this upstream, for gateways that need one the provider dialect does not set. A value must be a string; anything else fails validation (E002) |
+
+Extra headers are added after RTK's own. The literal `{session}` inside a value is replaced on every call with a fresh `rtk-` plus 32 hex characters, and every header in that call gets the same id. There are no other placeholders.
+
+`Authorization`, `x-api-key`, `x-goog-api-key` and `Content-Type` are protected: a configured header with one of those names (any capitalization) is ignored, so a config can neither replace nor leak the credential. Header names and values are never logged or put in error messages.
+
+OpenCode Go rejects calls without a session header (HTTP 400 `MissingSessionID`), so it needs one:
+
+```toml
+[upstream.opencode]
+provider    = "openai"
+model       = "deepseek-v4.1-flash"
+base_url    = "https://opencode.ai/inference/go/openai"
+api_key_env = "OPENCODE_API_KEY"
+headers     = { "x-opencode-session" = "{session}", "User-Agent" = "rtk/0.49.0" }
+```
 
 `rtk pipeline validate`, `rtk trust` and `rtk init` print `auth needed: export VAR=...` for any key that is unset.
 
