@@ -141,12 +141,14 @@ fn classify_batch(
     };
     let body = build_request(upstream, content, questions);
     let timeout = Duration::from_secs(upstream.timeout_secs.unwrap_or(DEFAULT_TIMEOUT_SECS));
-    let response = ureq::post(url)
+    let mut request = ureq::post(url)
         .timeout(timeout)
         .set("authorization", &format!("Bearer {key}"))
-        .set("content-type", "application/json")
-        .send_string(&body.to_string())
-        .ok()?;
+        .set("content-type", "application/json");
+    for (name, value) in crate::core::task_cmd::configured_headers(upstream) {
+        request = request.set(&name, &value);
+    }
+    let response = request.send_string(&body.to_string()).ok()?;
     let body = response.into_string().ok()?;
     let json: serde_json::Value = serde_json::from_str(&body).ok()?;
     Some((parse_answers(&json), usage_of(&json)))

@@ -39,6 +39,7 @@ const UPSTREAM_KEYS: &[&str] = &[
     "api_key_command",
     "api_key",
     "timeout_secs",
+    "headers",
 ];
 const GUARD_KEYS: &[&str] = &["never_worse", "min_size"];
 const REMOVED_GUARD_KEYS: &[&str] = &["max_recovery_rate"];
@@ -117,6 +118,10 @@ pub struct UpstreamDef {
     pub api_key_command: Option<String>,
     pub api_key_literal: bool,
     pub timeout_secs: Option<u64>,
+    /// Extra HTTP headers sent with every call to this upstream. Values may
+    /// hold `{session}`, which the host replaces with a fresh id per call. The
+    /// host never lets one replace a credential or content-type header.
+    pub headers: BTreeMap<String, String>,
     pub line: Option<usize>,
 }
 
@@ -786,6 +791,31 @@ fn parse_upstream(
             "timeout_secs" => {
                 upstream.timeout_secs = value.as_integer().and_then(|n| u64::try_from(n).ok())
             }
+            "headers" => match value.as_table() {
+                Some(table) => {
+                    for (header, header_value) in table {
+                        match header_value.as_str() {
+                            Some(text) => {
+                                upstream.headers.insert(header.clone(), text.to_string());
+                            }
+                            None => {
+                                parser.diag(
+                                    Code::E002,
+                                    format!("[upstream.{name}] `headers` values must be strings"),
+                                );
+                            }
+                        }
+                    }
+                }
+                None => {
+                    parser.diag(
+                        Code::E002,
+                        format!(
+                            "[upstream.{name}] `headers` must be a table of header name to string"
+                        ),
+                    );
+                }
+            },
             other => unknown_key(parser, other, UPSTREAM_KEYS, &format!("[upstream.{name}]")),
         }
     }
@@ -1059,6 +1089,47 @@ action = "deny"
             "[upstream.x]\nprovider = \"openai\"\nmodel = \"gpt\"\napi_key = \"sk-123\"\n",
         );
         assert!(file.upstreams["x"].api_key_literal);
+    }
+
+    #[test]
+    fn upstream_headers_parse_as_a_string_table() {
+        let file = ok_with_diags(
+            "[upstream.x]\nprovider = \"openai\"\nmodel = \"m\"\nheaders = { \"x-opencode-session\" = \"{session}\", \"User-Agent\" = \"rtk\" }\n",
+        );
+        let headers = &file.upstreams["x"].headers;
+        assert_eq!(headers.len(), 2);
+        assert_eq!(headers["x-opencode-session"], "{session}");
+        assert_eq!(headers["User-Agent"], "rtk");
+    }
+
+    #[test]
+    fn upstream_headers_subtable_parses() {
+        let file = ok_with_diags(
+            "[upstream.x]\nprovider = \"openai\"\nmodel = \"m\"\n\n[upstream.x.headers]\nx-a = \"1\"\n",
+        );
+        assert_eq!(file.upstreams["x"].headers["x-a"], "1");
+    }
+
+    #[test]
+    fn upstream_headers_absent_is_empty() {
+        let file = ok_with_diags("[upstream.x]\nprovider = \"openai\"\nmodel = \"m\"\n");
+        assert!(file.upstreams["x"].headers.is_empty());
+    }
+
+    #[test]
+    fn upstream_headers_wrong_type_is_a_diagnostic() {
+        for body in ["headers = \"x-a: 1\"", "headers = { x-a = 1 }"] {
+            let text = format!("[upstream.x]\nprovider = \"openai\"\nmodel = \"m\"\n{body}\n");
+            let result = parse(&text, "t");
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .any(|d| d.message.contains("`headers`")),
+                "{body}: {:#?}",
+                result.diagnostics
+            );
+        }
     }
 
     fn ok_with_diags(text: &str) -> PipelineFile {

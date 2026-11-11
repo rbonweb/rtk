@@ -376,6 +376,63 @@ fn call_worker(
     }
 }
 
+/// Header names a pipeline can never set: they carry the credential or the
+/// body type, and a config must not be able to replace or leak either.
+const PROTECTED_HEADERS: &[&str] = &[
+    "authorization",
+    "x-api-key",
+    "x-goog-api-key",
+    "content-type",
+];
+
+/// A fresh id for one worker call: `rtk-` and 32 hex characters.
+fn new_session_id() -> String {
+    use std::fmt::Write;
+    let mut buf = [0u8; 16];
+    if getrandom::fill(&mut buf).is_err() {
+        // No OS randomness: fall back to clock and pid so a call still gets a
+        // distinct id rather than failing over a header.
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        buf = (nanos ^ (u128::from(std::process::id()) << 96)).to_le_bytes();
+    }
+    buf.iter().fold(String::from("rtk-"), |mut out, b| {
+        let _ = write!(out, "{b:02x}");
+        out
+    })
+}
+
+/// The upstream's configured headers for one call: `{session}` expanded to one
+/// id shared by every value, protected names dropped (case-insensitively).
+pub(crate) fn configured_headers(upstream: &UpstreamDef) -> Vec<(String, String)> {
+    expand_headers(&upstream.headers, new_session_id)
+}
+
+fn expand_headers(
+    headers: &std::collections::BTreeMap<String, String>,
+    new_id: impl Fn() -> String,
+) -> Vec<(String, String)> {
+    let mut id: Option<String> = None;
+    headers
+        .iter()
+        .filter(|(name, _)| {
+            !PROTECTED_HEADERS
+                .iter()
+                .any(|p| name.trim().eq_ignore_ascii_case(p))
+        })
+        .map(|(name, value)| {
+            let value = if value.contains("{session}") {
+                value.replace("{session}", id.get_or_insert_with(&new_id))
+            } else {
+                value.clone()
+            };
+            (name.clone(), value)
+        })
+        .collect()
+}
+
 fn post_json(
     url: &str,
     headers: &[(&str, &str)],
@@ -530,6 +587,7 @@ fn call_anthropic(
     if let Some(t) = temperature {
         body["temperature"] = serde_json::json!(t);
     }
+    let extra = configured_headers(upstream);
     let mut headers: Vec<(&str, &str)> = vec![("anthropic-version", "2023-06-01")];
     if let Some(key) = key.as_deref() {
         headers.push(("x-api-key", key));
@@ -539,6 +597,7 @@ fn call_anthropic(
     if let Some(from) = displaced.as_deref() {
         headers.push(("x-rtk-routed-from", from));
     }
+    headers.extend(extra.iter().map(|(k, v)| (k.as_str(), v.as_str())));
     let response = post_json(
         &format!("{base}/v1/messages"),
         &headers,
@@ -579,6 +638,7 @@ fn call_openai(
         body["temperature"] = serde_json::json!(t);
     }
     let auth = key.as_deref().map(|k| format!("Bearer {k}"));
+    let extra = configured_headers(upstream);
     let mut headers: Vec<(&str, &str)> = Vec::new();
     if let Some(auth) = auth.as_deref() {
         headers.push(("Authorization", auth));
@@ -587,6 +647,7 @@ fn call_openai(
     if let Some(from) = displaced.as_deref() {
         headers.push(("x-rtk-routed-from", from));
     }
+    headers.extend(extra.iter().map(|(k, v)| (k.as_str(), v.as_str())));
     let response = post_json(
         &format!("{base}/v1/chat/completions"),
         &headers,
@@ -621,9 +682,12 @@ fn call_google(
         "contents": [{"role": "user", "parts": [{"text": request.user}]}],
         "generationConfig": generation,
     });
+    let mut headers: Vec<(&str, &str)> = vec![("x-goog-api-key", &key)];
+    let extra = configured_headers(upstream);
+    headers.extend(extra.iter().map(|(k, v)| (k.as_str(), v.as_str())));
     let response = post_json(
         &format!("{base}/v1beta/models/{}:generateContent", upstream.model),
-        &[("x-goog-api-key", &key)],
+        &headers,
         &body,
         timeout(upstream),
     )?;
@@ -649,6 +713,62 @@ fn call_google(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn header_map(pairs: &[(&str, &str)]) -> std::collections::BTreeMap<String, String> {
+        pairs
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()))
+            .collect()
+    }
+
+    #[test]
+    fn session_id_is_rtk_prefix_and_32_hex() {
+        let id = new_session_id();
+        let hex = id.strip_prefix("rtk-").expect("prefix");
+        assert_eq!(hex.len(), 32);
+        assert!(hex.chars().all(|c| c.is_ascii_hexdigit()));
+        assert_ne!(id, new_session_id());
+    }
+
+    #[test]
+    fn session_placeholder_is_one_id_per_call_in_every_value() {
+        let upstream = UpstreamDef {
+            headers: header_map(&[
+                ("x-a", "{session}"),
+                ("x-b", "pre-{session}-post"),
+                ("x-c", "{session}/{session}"),
+                ("x-plain", "{other}"),
+            ]),
+            ..UpstreamDef::default()
+        };
+        let get = |h: &[(String, String)], k: &str| {
+            h.iter()
+                .find(|(n, _)| n == k)
+                .map(|(_, v)| v.clone())
+                .unwrap()
+        };
+        let first = configured_headers(&upstream);
+        let id = get(&first, "x-a");
+        assert!(id.starts_with("rtk-") && id.len() == 36);
+        assert_eq!(get(&first, "x-b"), format!("pre-{id}-post"));
+        assert_eq!(get(&first, "x-c"), format!("{id}/{id}"));
+        assert_eq!(get(&first, "x-plain"), "{other}");
+        let second = configured_headers(&upstream);
+        assert_ne!(get(&second, "x-a"), id);
+    }
+
+    #[test]
+    fn protected_header_names_are_skipped_case_insensitively() {
+        let map = header_map(&[
+            ("Authorization", "Bearer stolen"),
+            ("X-API-KEY", "stolen"),
+            ("x-goog-api-key", "stolen"),
+            ("content-TYPE", "text/plain"),
+            ("x-keep", "yes"),
+        ]);
+        let out = expand_headers(&map, || "rtk-id".to_string());
+        assert_eq!(out, vec![("x-keep".to_string(), "yes".to_string())]);
+    }
 
     #[test]
     fn args_parse_flags_and_paths() {

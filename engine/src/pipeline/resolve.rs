@@ -396,6 +396,9 @@ pub fn resolve(local: &[SourceFile]) -> (Resolved, Vec<Diagnostic>) {
                     if def.timeout_secs.is_some() {
                         existing.timeout_secs = def.timeout_secs;
                     }
+                    for (header, value) in &def.headers {
+                        existing.headers.insert(header.clone(), value.clone());
+                    }
                     *origin = source.label.clone();
                 }
                 None => {
