@@ -88,6 +88,10 @@ const NPM_SUBCOMMANDS: &[&str] = &[
     "org",
     "query",
     "run-script",
+    // Aliases of `run` and `exec`: they already name the subcommand, so no `run` is injected.
+    "rum",
+    "urn",
+    "x",
     "sbom",
     "shrinkwrap",
     "unstar",

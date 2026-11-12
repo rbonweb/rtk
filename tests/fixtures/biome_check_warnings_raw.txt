@@ -1,0 +1,366 @@
+src/styles/cards.module.css:1260:21 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1258 │  .card .item { color: red; }
+    1259 │    .card .item { color: red; }
+  > 1260 │      .card .title { color: red !important; }
+         │                     ^^^^^^^^^^
+    1261 │      .card .title { color: red !important; }
+    1262 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1260 │  .card .title { color: red !important; }
+         │                    ----------- 
+
+src/styles/cards.module.css:1261:22 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1259 │    .card .item { color: red; }
+    1260 │      .card .title { color: red !important; }
+  > 1261 │      .card .title { color: red !important; }
+         │                      ^^^^^^^^^^
+    1262 │    .card .item { color: red; }
+    1263 │  .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1261 │  .card .title { color: red !important; }
+         │                     ----------- 
+
+src/styles/cards.module.css:487:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 0)
+  
+    485 │    .card .item { color: red; }
+    486 │  .card .item { color: red; }
+  > 487 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    488 │    .card .item { color: red; }
+    489 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:508:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 0)
+  
+    506 │    .card .item { color: red; }
+    507 │  .card .item { color: red; }
+  > 508 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    509 │    .card .item { color: red; }
+    510 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:934:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 1)
+  
+    932 │    .card .item { color: red; }
+    933 │  .card .item { color: red; }
+  > 934 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    935 │    .card .item { color: red; }
+    936 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:954:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 0)
+  
+    952 │    .card .item { color: red; }
+    953 │  .card .item { color: red; }
+  > 954 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    955 │    .card .item { color: red; }
+    956 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:992:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 0)
+  
+    990 │    .card .item { color: red; }
+    991 │  .card .item { color: red; }
+  > 992 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    993 │    .card .item { color: red; }
+    994 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:1016:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 0)
+  
+    1014 │    .card .item { color: red; }
+    1015 │  .card .item { color: red; }
+  > 1016 │  .card .item { color: red; }
+         │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    1017 │    .card .item { color: red; }
+    1018 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:1037:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 3, 0)
+  
+    1035 │    .card .item { color: red; }
+    1036 │  .card .item { color: red; }
+  > 1037 │  .card .item { color: red; }
+         │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    1038 │    .card .item { color: red; }
+    1039 │    .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    381 │    .card .item { color: red; }
+    382 │  .card .item { color: red; }
+  > 383 │  .card .item { color: red; }
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    384 │    .card .item { color: red; }
+    385 │    .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/cards.module.css:1275:1 lint/style/noDescendingSpecificity ━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 2, 0)
+  
+    1273 │    .card .item { color: red; }
+    1274 │  .card .item { color: red; }
+  > 1275 │  .card .item { color: red; }
+         │ ^^^^^^^^^^^^^^^^^^
+    1276 │    .card .item { color: red; }
+    1277 │  .card .item { color: red; }
+  
+  i This selector specificity is (0, 4, 0)
+  
+    1238 │    .card .item { color: red; }
+    1239 │  .card .item { color: red; }
+  > 1240 │  .card .item { color: red; }
+         │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    1241 │    .card .item { color: red; }
+    1242 │  .card .item { color: red; }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+src/styles/base.css:1220:19 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1218 │  .card .item { color: red; }
+    1219 │    .card .item { color: red; }
+  > 1220 │      .card .title { color: red !important; }
+         │                   ^^^^^^^^^^
+    1221 │    .card .item { color: red; }
+    1222 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1220 │  .card .title { color: red !important; }
+         │                  ----------- 
+
+src/styles/base.css:1224:22 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1222 │    .card .item { color: red; }
+    1223 │    .card .item { color: red; }
+  > 1224 │      .card .title { color: red !important; }
+         │                      ^^^^^^^^^^
+    1225 │    .card .item { color: red; }
+    1226 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1224 │  .card .title { color: red !important; }
+         │                     ----------- 
+
+src/styles/base.css:1228:17 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1226 │    .card .item { color: red; }
+    1227 │    .card .item { color: red; }
+  > 1228 │      .card .title { color: red !important; }
+         │                 ^^^^^^^^^^
+    1229 │      .card .title { color: red !important; }
+    1230 │      .card .title { color: red !important; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1228 │  .card .title { color: red !important; }
+         │                ----------- 
+
+src/styles/base.css:1229:29 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1227 │    .card .item { color: red; }
+    1228 │      .card .title { color: red !important; }
+  > 1229 │      .card .title { color: red !important; }
+         │                             ^^^^^^^^^^
+    1230 │      .card .title { color: red !important; }
+    1231 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1229 │  .card .title { color: red !important; }
+         │                            ----------- 
+
+src/styles/base.css:1230:22 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1228 │      .card .title { color: red !important; }
+    1229 │      .card .title { color: red !important; }
+  > 1230 │      .card .title { color: red !important; }
+         │                      ^^^^^^^^^^
+    1231 │    .card .item { color: red; }
+    1232 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1230 │  .card .title { color: red !important; }
+         │                     ----------- 
+
+src/styles/base.css:1233:19 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1231 │    .card .item { color: red; }
+    1232 │    .card .item { color: red; }
+  > 1233 │      .card .title { color: red !important; }
+         │                   ^^^^^^^^^^
+    1234 │    .card .item { color: red; }
+    1235 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1233 │  .card .title { color: red !important; }
+         │                  ----------- 
+
+src/styles/base.css:1236:20 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1234 │    .card .item { color: red; }
+    1235 │    .card .item { color: red; }
+  > 1236 │      .card .title { color: red !important; }
+         │                    ^^^^^^^^^^
+    1237 │    .card .item { color: red; }
+    1238 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1236 │  .card .title { color: red !important; }
+         │                   ----------- 
+
+src/styles/base.css:1239:21 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    1237 │    .card .item { color: red; }
+    1238 │    .card .item { color: red; }
+  > 1239 │      .card .title { color: red !important; }
+         │                     ^^^^^^^^^^
+    1240 │    .card .item { color: red; }
+    1241 │    .card .item { color: red; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    1239 │  .card .title { color: red !important; }
+         │                    ----------- 
+
+Checked 1402 files in 555ms. No fixes applied.
+Found 18 warnings.
