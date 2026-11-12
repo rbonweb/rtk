@@ -1,0 +1,6 @@
+[0m
+> build · deepseek-v4.1-flash
+[0m→ [0mRead README.md 
+[0m→ [0mRead calc.py 
+> build · deepseek-v4.1-flash
+This is a tiny calculator project, but its `add` function in `calc.py` is buggy—it returns `a - b` instead of `a + b`, so addition actually performs subtraction.

@@ -1,0 +1,21 @@
+[0m
+> build · deepseek-v4.1-flash
+I'll run each command separately as requested.
+[0m$ [0m./check.sh
+running checks
+check failed: missing config
+> build · deepseek-v4.1-flash
+[0m$ [0mcat does-not-exist.txt
+cat: does-not-exist.txt: No such file or directory
+> build · deepseek-v4.1-flash
+[0m$ [0mpython3 -c 'import nosuchmodule'
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import nosuchmodule
+ModuleNotFoundError: No module named 'nosuchmodule'
+> build · deepseek-v4.1-flash
+- `./check.sh` — exited 1: the script ran but reported `check failed: missing config`.
+- `cat does-not-exist.txt` — exited 1: the file doesn't exist (`No such file or directory`).
+- `python3 -c 'import nosuchmodule'` — exited 1: `ModuleNotFoundError: No module named 'nosuchmodule'`.
+
+Nothing was rerun or fixed.

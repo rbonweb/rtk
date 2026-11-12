@@ -187,6 +187,7 @@ const UNDOCUMENTED: &[&str] = &[
     "npm",
     "npx",
     "oc",
+    "opencode",
     "paratest",
     "pest",
     "php",
