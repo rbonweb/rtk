@@ -10,8 +10,10 @@ use crate::core::utils::{MissingTool, resolved_command, tool_exec, truncate};
 use crate::mypy_cmd;
 use crate::ruff_cmd;
 use anyhow::{Context, Result};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct EslintMessage {
@@ -218,6 +220,7 @@ pub fn run(runner: Option<&str>, args: &[String], verbose: u8) -> Result<i32> {
     } else {
         match linter {
             "eslint" => filter_eslint_json(&result.stdout),
+            "biome" => filter_biome_output(&raw),
             "ruff" => {
                 // Reuse ruff_cmd's JSON parser
                 if !result.stdout.trim().is_empty() {
@@ -519,6 +522,126 @@ fn filter_generic_lint(output: &str) -> String {
     result.trim().to_string()
 }
 
+/// A biome diagnostic header: `path:line:col rule [FIXABLE ...] ━━━━`. Diagnostics that have no
+/// source position (`format`, `organizeImports`, configuration) carry `path rule ━━━` instead.
+static BIOME_HEADER: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(?P<path>\S.*?)(?::(?P<line>\d+):(?P<col>\d+))? (?P<rule>[A-Za-z][\w/-]*)(?:\s+[A-Z]+)*\s+━+\s*$")
+        .unwrap()
+});
+/// The first body line of a diagnostic: a severity marker, then biome's one-line explanation.
+static BIOME_MESSAGE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^\s+(?P<mark>[!×✖✕xi])\s+(?P<text>\S.*)$").unwrap());
+static BIOME_FOUND: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^Found (\d+) (errors?|warnings?|infos?)\.").unwrap());
+static BIOME_NOT_SHOWN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^Diagnostics not shown: (\d+)\.").unwrap());
+
+#[derive(Debug, PartialEq)]
+struct BiomeDiagnostic {
+    location: String,
+    rule: String,
+    message: String,
+    is_error: bool,
+}
+
+/// Condense biome's default text output to one line per diagnostic.
+///
+/// Biome prints a code frame, caret art and an explanation per diagnostic. This keeps the
+/// header position, the rule and the first line of the explanation, and takes the exact counts
+/// from biome's own `Found N errors.` summary (falling back to counting the diagnostics shown).
+/// Output with no recognisable diagnostic header (a different `--reporter`, a crash, a clean
+/// run) is returned unchanged, so nothing is ever hidden by a format this parser does not know.
+fn filter_biome_output(output: &str) -> String {
+    let lines: Vec<&str> = output.lines().collect();
+    let mut diagnostics: Vec<BiomeDiagnostic> = Vec::new();
+    let (mut found_errors, mut found_warnings, mut not_shown) = (None, None, None);
+
+    let mut i = 0;
+    while i < lines.len() {
+        let line = lines[i];
+        if let Some(caps) = BIOME_FOUND.captures(line) {
+            let count: usize = caps[1].parse().unwrap_or(0);
+            if caps[2].starts_with("error") {
+                found_errors = Some(count);
+            } else if caps[2].starts_with("warning") {
+                found_warnings = Some(count);
+            }
+        } else if let Some(caps) = BIOME_NOT_SHOWN.captures(line) {
+            not_shown = caps[1].parse::<usize>().ok();
+        } else if let Some(caps) = BIOME_HEADER.captures(line) {
+            let location = match (caps.name("line"), caps.name("col")) {
+                (Some(l), Some(c)) => format!("{}:{}:{}", &caps["path"], l.as_str(), c.as_str()),
+                _ => caps["path"].to_string(),
+            };
+            // The explanation is the first marked line after the header, before the next header.
+            let mut message = String::new();
+            let mut is_error = false;
+            for body in lines[i + 1..]
+                .iter()
+                .take_while(|l| !BIOME_HEADER.is_match(l))
+            {
+                if let Some(m) = BIOME_MESSAGE.captures(body) {
+                    is_error = !matches!(&m["mark"], "!" | "i");
+                    message = m["text"].trim().to_string();
+                    break;
+                }
+            }
+            diagnostics.push(BiomeDiagnostic {
+                location,
+                rule: caps["rule"].to_string(),
+                message,
+                is_error,
+            });
+        }
+        i += 1;
+    }
+
+    if diagnostics.is_empty() {
+        return output.trim().to_string();
+    }
+
+    let shown_errors = diagnostics.iter().filter(|d| d.is_error).count();
+    let errors = found_errors.unwrap_or(shown_errors);
+    let warnings = found_warnings.unwrap_or(diagnostics.len() - shown_errors);
+
+    // Errors first: they are what fails the run.
+    diagnostics.sort_by_key(|d| !d.is_error);
+    let rendered: Vec<String> = diagnostics
+        .iter()
+        .map(|d| {
+            let line = format!("{} {} {}", d.location, d.rule, d.message);
+            truncate(line.trim_end(), 200)
+        })
+        .collect();
+
+    let mut result = format!("Biome: {errors} errors, {warnings} warnings\n");
+    const MAX_DIAGNOSTICS: usize = CAP_ERRORS;
+    for line in rendered.iter().take(MAX_DIAGNOSTICS) {
+        result.push_str(line);
+        result.push('\n');
+    }
+    if rendered.len() > MAX_DIAGNOSTICS {
+        result.push_str(&format!(
+            "\n… +{} more diagnostics\n",
+            rendered.len() - MAX_DIAGNOSTICS
+        ));
+        if let Some(hint) = crate::core::tee::force_tee_tail_hint(
+            &rendered.join("\n"),
+            "biome-diagnostics",
+            MAX_DIAGNOSTICS + 1,
+        ) {
+            result.push_str(&format!("  {hint}\n"));
+        }
+    }
+    if let Some(n) = not_shown {
+        result.push_str(&format!(
+            "{n} more not shown by biome (raise --max-diagnostics)\n"
+        ));
+    }
+
+    result.trim().to_string()
+}
+
 /// Compact file path (remove common prefixes)
 fn compact_path(path: &str) -> String {
     // Remove common prefixes like /Users/..., /home/..., C:\
@@ -584,6 +707,105 @@ mod tests {
         assert!(result.contains("prefer-const"));
         assert!(result.contains("no-unused-vars"));
         assert!(result.contains("src/utils.ts"));
+    }
+
+    const BIOME_WARNINGS_RAW: &str =
+        include_str!("../../../tests/fixtures/biome_check_warnings_raw.txt");
+
+    fn count_tokens(text: &str) -> usize {
+        text.split_whitespace().count()
+    }
+
+    #[test]
+    fn test_biome_counts_are_exact_and_every_location_survives() {
+        let out = filter_biome_output(BIOME_WARNINGS_RAW);
+
+        assert!(out.starts_with("Biome: 0 errors, 18 warnings"), "{out}");
+        // One line per diagnostic, in biome's file:line:col form.
+        let expected: Vec<&str> = BIOME_WARNINGS_RAW
+            .lines()
+            .filter(|l| l.contains(" ━━"))
+            .map(|l| l.split(' ').next().expect("location"))
+            .collect();
+        assert_eq!(expected.len(), 18);
+        for location in &expected {
+            assert!(out.contains(location), "missing {location} in:\n{out}");
+        }
+        assert!(
+            out.contains(
+                "lint/complexity/noImportantStyles Avoid the use of the !important style."
+            )
+        );
+        assert!(
+            out.contains(
+                "lint/style/noDescendingSpecificity Descending specificity selector found."
+            )
+        );
+    }
+
+    #[test]
+    fn test_biome_drops_code_frames() {
+        let out = filter_biome_output(BIOME_WARNINGS_RAW);
+        assert!(!out.contains('│'), "{out}");
+        assert!(!out.contains("^^^^"), "{out}");
+        assert!(!out.contains("Unsafe fix"), "{out}");
+    }
+
+    #[test]
+    fn test_biome_savings_at_least_20_percent() {
+        let out = filter_biome_output(BIOME_WARNINGS_RAW);
+        let savings =
+            100.0 - count_tokens(&out) as f64 / count_tokens(BIOME_WARNINGS_RAW) as f64 * 100.0;
+        assert!(savings >= 20.0, "expected >=20% savings, got {savings:.1}%");
+    }
+
+    #[test]
+    fn test_biome_errors_come_first_and_use_the_summary_counts() {
+        let raw = "src/a.ts:3:7 lint/style/useConst  FIXABLE  ━━━━━━━━━━\n\n  ! Use const.\n\n    3 │ let a = 1;\n      │     ^\n\nsrc/b.ts:9:1 lint/correctness/noUnusedVariables ━━━━━━━━━━\n\n  ✖ This variable is unused.\n\n    9 │ const b = 1;\n      │       ^\n\nChecked 2 files in 3ms. No fixes applied.\nFound 1 error.\nFound 1 warning.\n";
+        let out = filter_biome_output(raw);
+        assert_eq!(
+            out,
+            "Biome: 1 errors, 1 warnings\nsrc/b.ts:9:1 lint/correctness/noUnusedVariables This variable is unused.\nsrc/a.ts:3:7 lint/style/useConst Use const."
+        );
+    }
+
+    #[test]
+    fn test_biome_diagnostic_without_position_keeps_its_path() {
+        let raw = "src/a.ts format ━━━━━━━━━━\n\n  ✖ Formatter would have printed the following content:\n\n    1 │ - a\n\nChecked 1 file in 1ms. No fixes applied.\nFound 1 error.\n";
+        let out = filter_biome_output(raw);
+        assert!(
+            out.contains("src/a.ts format Formatter would have printed"),
+            "{out}"
+        );
+        assert!(out.starts_with("Biome: 1 errors, 0 warnings"), "{out}");
+    }
+
+    #[test]
+    fn test_biome_caps_diagnostics_with_overflow_line() {
+        let mut raw = String::new();
+        for n in 1..=25 {
+            raw.push_str(&format!(
+                "src/a.ts:{n}:1 lint/style/useConst ━━━━━━━━━━\n\n  ! Use const.\n\n"
+            ));
+        }
+        raw.push_str("Found 25 warnings.\n");
+        let out = filter_biome_output(&raw);
+        assert!(out.starts_with("Biome: 0 errors, 25 warnings"), "{out}");
+        assert_eq!(out.matches("lint/style/useConst").count(), CAP_ERRORS);
+        assert!(out.contains("… +5 more diagnostics"), "{out}");
+    }
+
+    #[test]
+    fn test_biome_unparsed_output_falls_back_to_raw() {
+        // A machine reporter the user chose, a crash, or a clean run has no diagnostic header.
+        for raw in [
+            "{\"summary\":{\"errors\":1},\"diagnostics\":[]}",
+            "Checked 12 files in 4ms. No fixes applied.",
+            "internal error: something broke",
+            "",
+        ] {
+            assert_eq!(filter_biome_output(raw), raw.trim());
+        }
     }
 
     #[test]
