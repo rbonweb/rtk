@@ -1,0 +1,86 @@
+[0m
+> build · deepseek-v4.1-flash
+I'll start by looking at the repo to understand the current state.
+[0m$ [0mls -la
+total 24
+drwxr-xr-x   6 user  wheel  192 Nov 12 16:36 .
+drwxr-xr-x   8 user  wheel  256 Nov 12 16:36 ..
+drwxr-xr-x  12 user  wheel  384 Nov 12 16:36 .git
+-rw-r--r--   1 user  wheel   34 Nov 12 16:36 README.md
+-rw-r--r--   1 user  wheel   32 Nov 12 16:36 calc.py
+-rwxr-xr-x   1 user  wheel   79 Nov 12 16:36 check.sh
+[0m✱ [0mGlob "**/*" [90m3 matches[0m
+> build · deepseek-v4.1-flash
+[0m→ [0mRead calc.py 
+[0m→ [0mRead README.md 
+[0m→ [0mRead check.sh 
+> build · deepseek-v4.1-flash
+[0m← [0mWrite test_calc.py
+Created file successfully: test_calc.py
+> build · deepseek-v4.1-flash
+[0m$ [0mpython3 -m unittest -v
+test_add_positive_numbers (test_calc.TestAdd.test_add_positive_numbers) ... FAIL
+test_add_zeros (test_calc.TestAdd.test_add_zeros) ... ok
+
+======================================================================
+FAIL: test_add_positive_numbers (test_calc.TestAdd.test_add_positive_numbers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/opencode-fixtures/repo_d/test_calc.py", line 8, in test_add_positive_numbers
+    self.assertEqual(add(2, 3), 5)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AssertionError: -1 != 5
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.001s
+
+FAILED (failures=1)
+> build · deepseek-v4.1-flash
+[0m← [0mWrite CHANGELOG.md
+Created file successfully: CHANGELOG.md
+> build · deepseek-v4.1-flash
+[0m$ [0mgit status --short && git diff --stat
+?? CHANGELOG.md
+?? __pycache__/
+?? test_calc.py
+> build · deepseek-v4.1-flash
+[0m← [0mEdit calc.py
+Index: calc.py
+===================================================================
+--- calc.py
++++ calc.py
+@@ -1,2 +1,2 @@
+ def add(a, b):
+-    return a - b
++    return a + b
+
+> build · deepseek-v4.1-flash
+[0m$ [0mpython3 -m unittest -v
+test_add_positive_numbers (test_calc.TestAdd.test_add_positive_numbers) ... ok
+test_add_zeros (test_calc.TestAdd.test_add_zeros) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK
+> build · deepseek-v4.1-flash
+[0m$ [0mrm -rf __pycache__ && git status --short && git diff --stat
+M calc.py
+?? CHANGELOG.md
+?? test_calc.py
+ calc.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+> build · deepseek-v4.1-flash
+All six steps are done.
+
+**Summary**
+
+- **test_calc.py added** — two unittest cases on `add`: `2 + 3 == 5` (in `TestAdd.test_add_positive_numbers`) and `0 + 0 == 0` (in `TestAdd.test_add_zeros`).
+- **First test run failed, as the repo's bug predicted** — `test_add_positive_numbers` reported `AssertionError: -1 != 5`; 1 of 2 tests failed.
+- **CHANGELOG.md added** — one line each for `calc.py`, `check.sh`, `README.md`, `test_calc.py`, and `CHANGELOG.md` itself (`.git/` internals excluded).
+- **Before the fix, `git status --short`** showed only `?? CHANGELOG.md`, `?? test_calc.py`, `?? __pycache__/`, and `git diff --stat` was empty (nothing tracked had changed yet, and untracked files never appear in `diff`).
+- **calc.py fixed** — `add` returned `a - b`; changed to `return a + b`. Rerun: both tests `ok`, "Ran 2 tests ... OK".
+- **After the fix, `git status --short`** shows ` M calc.py` plus the two new files, and `git diff --stat` shows `calc.py | 2 +-`, 1 insertion, 1 deletion.
+- **Cleanup** — I deleted the `__pycache__/` that the test runs generated so it doesn't sit in your working tree as untracked noise.
+
+One thing to flag: `check.sh` is a stub that prints `check failed: missing config` and exits 1. I left it untouched since it wasn't in scope, but it will fail any check pipeline it's wired into.

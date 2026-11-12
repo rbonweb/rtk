@@ -644,6 +644,15 @@ pub const RULES: &[RtkRule] = &[
         savings_pct: 65.0,
         ..RtkRule::DEFAULT
     },
+    RtkRule {
+        pattern: r"^opencode\s+run(?:\s|$)",
+        rtk_cmd: "rtk opencode",
+        pipeline_safety: PipelineSafety::ProducerOnly,
+        rewrite_prefixes: &["opencode"],
+        category: "Build",
+        savings_pct: 80.0,
+        ..RtkRule::DEFAULT
+    },
     // PHP tooling
     RtkRule {
         pattern: r"^php\s+artisan(?:\s|$)",

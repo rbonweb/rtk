@@ -1,0 +1,35 @@
+[0m
+> build · deepseek-v4.1-flash
+I'll look at the repo and current bug first.
+[0m→ [0mRead calc.py 
+[0m$ [0mpython3 -c 'from calc import add; print(add(2,3))'
+-1
+> build · deepseek-v4.1-flash
+Before check returns `-1` (it subtracts). Fixing:
+[0m← [0mEdit calc.py
+Index: calc.py
+===================================================================
+--- calc.py
++++ calc.py
+@@ -1,2 +1,2 @@
+ def add(a, b):
+-    return a - b
++    return a + b
+
+> build · deepseek-v4.1-flash
+[0m$ [0mpython3 -c 'from calc import add; print(add(2,3))'
+5
+> build · deepseek-v4.1-flash
+Fixed and verified.
+
+**Change** — `calc.py:2` in `add()`:
+```python
+-    return a - b
++    return a + b
+```
+
+**Check output**
+- Before: `add(2, 3)` → `-1`
+- After: `add(2, 3)` → `5`
+
+The function was subtracting instead of adding; it now returns the correct sum.

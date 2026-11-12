@@ -1,0 +1,25 @@
+[0m
+> build · deepseek-v4.1-flash
+I'll start by exploring the repo structure and reading the file.
+[0m→ [0mRead inventory.py 
+[0m✱ [0mGrep "^(def |raise)" [90min . · 61 matches[0m
+[0m✱ [0mGlob "**/*" [90min . · 4 matches[0m
+> build · deepseek-v4.1-flash
+My grep pattern only caught unindented `def` lines (raises are indented). Let me get raises and the rest.
+[0m$ [0mwc -l /private/tmp/opencode-fixtures/repo_g/inventory.py /private/tmp/opencode-fixtures/repo_g/check.sh /private/tmp/opencode-fixtures/repo_g/calc.py /private/tmp/opencode-fixtures/repo_g/README.md
+421 /private/tmp/opencode-fixtures/repo_g/inventory.py
+       4 /private/tmp/opencode-fixtures/repo_g/check.sh
+       2 /private/tmp/opencode-fixtures/repo_g/calc.py
+       2 /private/tmp/opencode-fixtures/repo_g/README.md
+     429 total
+[0m✱ [0mGrep "raise" [90min . · 60 matches[0m
+[0m$ [0mpython3 -c 'import inventory; print(inventory.item_3(2, 1.5))'
+3.0
+> build · deepseek-v4.1-flash
+- **Function count:** `inventory.py` defines **60 functions** (`item_0` through `item_59`; no other functions in that file). `calc.py` separately defines `add` at line 1. Each `item_N` includes one `raise ValueError(...)` guard — 60 raises in `inventory.py` total.
+
+- **What each does:** Every `item_N(qty, price)` computes the line total `qty * price`, raises `ValueError('negative total for item N')` if the total is negative, and otherwise returns it rounded to 2 decimal places. They are identical apart from the item number.
+
+- **`item_3(2, 1.5)` output:** `3.0` (2 × 1.5 = 3, rounded → `3.0`).
+
+File sizes from `wc -l`: `inventory.py` 421, `check.sh` 4, `calc.py` 2, `README.md` 2 (429 total).

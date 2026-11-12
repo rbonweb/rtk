@@ -1,0 +1,1 @@
+[91m[1mError: [0mModel unavailable: opencode-go/no-such-model-xyz

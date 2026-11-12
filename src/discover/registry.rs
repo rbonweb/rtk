@@ -2454,6 +2454,36 @@ mod tests {
     }
 
     #[test]
+    fn opencode_run_is_rewritten_and_other_subcommands_are_not() {
+        assert_eq!(
+            rewrite_command_no_prefixes(r#"opencode run --archived --auto -m x "do it""#, &[]),
+            Some(r#"rtk opencode run --archived --auto -m x "do it""#.into())
+        );
+        assert_eq!(
+            rewrite_command_no_prefixes("opencode run", &[]),
+            Some("rtk opencode run".into())
+        );
+        let multiline = "opencode run --archived -m x \"line one\nline two: $HOME 'quoted'\"";
+        assert_eq!(
+            rewrite_command_no_prefixes(multiline, &[]),
+            Some(format!("rtk {multiline}"))
+        );
+        for command in [
+            "opencode auth list",
+            "opencode models",
+            "opencode",
+            "opencode runner",
+            "opencode serve",
+        ] {
+            assert_eq!(
+                rewrite_command_no_prefixes(command, &[]),
+                None,
+                "{command} must not be rewritten"
+            );
+        }
+    }
+
+    #[test]
     fn ng_build_rewrite_keeps_native_arguments_and_a_narrow_command_scope() {
         assert_eq!(
             rewrite_command_no_prefixes("ng build app --output-path 'dist folder'", &[]),
@@ -3082,6 +3112,7 @@ mod tests {
                 "rtk mypy",
                 "rtk next",
                 "rtk node",
+                "rtk opencode",
                 "rtk paratest",
                 "rtk pest",
                 "rtk phpstan",

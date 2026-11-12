@@ -1,0 +1,547 @@
+[0m
+> build · deepseek-v4.1-flash
+[0m$ [0mcat inventory.py ; grep -n def inventory.py ; grep -n raise inventory.py ; python3 -c 'import inventory; print(inventory.item_7(3, 2.25))'
+# inventory helpers
+def item_0(qty, price):
+    """Compute line total for item 0."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 0')
+    return round(total, 2)
+
+def item_1(qty, price):
+    """Compute line total for item 1."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 1')
+    return round(total, 2)
+
+def item_2(qty, price):
+    """Compute line total for item 2."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 2')
+    return round(total, 2)
+
+def item_3(qty, price):
+    """Compute line total for item 3."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 3')
+    return round(total, 2)
+
+def item_4(qty, price):
+    """Compute line total for item 4."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 4')
+    return round(total, 2)
+
+def item_5(qty, price):
+    """Compute line total for item 5."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 5')
+    return round(total, 2)
+
+def item_6(qty, price):
+    """Compute line total for item 6."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 6')
+    return round(total, 2)
+
+def item_7(qty, price):
+    """Compute line total for item 7."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 7')
+    return round(total, 2)
+
+def item_8(qty, price):
+    """Compute line total for item 8."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 8')
+    return round(total, 2)
+
+def item_9(qty, price):
+    """Compute line total for item 9."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 9')
+    return round(total, 2)
+
+def item_10(qty, price):
+    """Compute line total for item 10."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 10')
+    return round(total, 2)
+
+def item_11(qty, price):
+    """Compute line total for item 11."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 11')
+    return round(total, 2)
+
+def item_12(qty, price):
+    """Compute line total for item 12."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 12')
+    return round(total, 2)
+
+def item_13(qty, price):
+    """Compute line total for item 13."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 13')
+    return round(total, 2)
+
+def item_14(qty, price):
+    """Compute line total for item 14."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 14')
+    return round(total, 2)
+
+def item_15(qty, price):
+    """Compute line total for item 15."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 15')
+    return round(total, 2)
+
+def item_16(qty, price):
+    """Compute line total for item 16."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 16')
+    return round(total, 2)
+
+def item_17(qty, price):
+    """Compute line total for item 17."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 17')
+    return round(total, 2)
+
+def item_18(qty, price):
+    """Compute line total for item 18."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 18')
+    return round(total, 2)
+
+def item_19(qty, price):
+    """Compute line total for item 19."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 19')
+    return round(total, 2)
+
+def item_20(qty, price):
+    """Compute line total for item 20."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 20')
+    return round(total, 2)
+
+def item_21(qty, price):
+    """Compute line total for item 21."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 21')
+    return round(total, 2)
+
+def item_22(qty, price):
+    """Compute line total for item 22."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 22')
+    return round(total, 2)
+
+def item_23(qty, price):
+    """Compute line total for item 23."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 23')
+    return round(total, 2)
+
+def item_24(qty, price):
+    """Compute line total for item 24."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 24')
+    return round(total, 2)
+
+def item_25(qty, price):
+    """Compute line total for item 25."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 25')
+    return round(total, 2)
+
+def item_26(qty, price):
+    """Compute line total for item 26."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 26')
+    return round(total, 2)
+
+def item_27(qty, price):
+    """Compute line total for item 27."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 27')
+    return round(total, 2)
+
+def item_28(qty, price):
+    """Compute line total for item 28."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 28')
+    return round(total, 2)
+
+def item_29(qty, price):
+    """Compute line total for item 29."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 29')
+    return round(total, 2)
+
+def item_30(qty, price):
+    """Compute line total for item 30."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 30')
+    return round(total, 2)
+
+def item_31(qty, price):
+    """Compute line total for item 31."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 31')
+    return round(total, 2)
+
+def item_32(qty, price):
+    """Compute line total for item 32."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 32')
+    return round(total, 2)
+
+def item_33(qty, price):
+    """Compute line total for item 33."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 33')
+    return round(total, 2)
+
+def item_34(qty, price):
+    """Compute line total for item 34."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 34')
+    return round(total, 2)
+
+def item_35(qty, price):
+    """Compute line total for item 35."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 35')
+    return round(total, 2)
+
+def item_36(qty, price):
+    """Compute line total for item 36."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 36')
+    return round(total, 2)
+
+def item_37(qty, price):
+    """Compute line total for item 37."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 37')
+    return round(total, 2)
+
+def item_38(qty, price):
+    """Compute line total for item 38."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 38')
+    return round(total, 2)
+
+def item_39(qty, price):
+    """Compute line total for item 39."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 39')
+    return round(total, 2)
+
+def item_40(qty, price):
+    """Compute line total for item 40."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 40')
+    return round(total, 2)
+
+def item_41(qty, price):
+    """Compute line total for item 41."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 41')
+    return round(total, 2)
+
+def item_42(qty, price):
+    """Compute line total for item 42."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 42')
+    return round(total, 2)
+
+def item_43(qty, price):
+    """Compute line total for item 43."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 43')
+    return round(total, 2)
+
+def item_44(qty, price):
+    """Compute line total for item 44."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 44')
+    return round(total, 2)
+
+def item_45(qty, price):
+    """Compute line total for item 45."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 45')
+    return round(total, 2)
+
+def item_46(qty, price):
+    """Compute line total for item 46."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 46')
+    return round(total, 2)
+
+def item_47(qty, price):
+    """Compute line total for item 47."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 47')
+    return round(total, 2)
+
+def item_48(qty, price):
+    """Compute line total for item 48."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 48')
+    return round(total, 2)
+
+def item_49(qty, price):
+    """Compute line total for item 49."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 49')
+    return round(total, 2)
+
+def item_50(qty, price):
+    """Compute line total for item 50."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 50')
+    return round(total, 2)
+
+def item_51(qty, price):
+    """Compute line total for item 51."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 51')
+    return round(total, 2)
+
+def item_52(qty, price):
+    """Compute line total for item 52."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 52')
+    return round(total, 2)
+
+def item_53(qty, price):
+    """Compute line total for item 53."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 53')
+    return round(total, 2)
+
+def item_54(qty, price):
+    """Compute line total for item 54."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 54')
+    return round(total, 2)
+
+def item_55(qty, price):
+    """Compute line total for item 55."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 55')
+    return round(total, 2)
+
+def item_56(qty, price):
+    """Compute line total for item 56."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 56')
+    return round(total, 2)
+
+def item_57(qty, price):
+    """Compute line total for item 57."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 57')
+    return round(total, 2)
+
+def item_58(qty, price):
+    """Compute line total for item 58."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 58')
+    return round(total, 2)
+
+def item_59(qty, price):
+    """Compute line total for item 59."""
+    total = qty * price
+    if total < 0:
+        raise ValueError('negative total for item 59')
+    return round(total, 2)
+
+2:def item_0(qty, price):
+9:def item_1(qty, price):
+16:def item_2(qty, price):
+23:def item_3(qty, price):
+30:def item_4(qty, price):
+37:def item_5(qty, price):
+44:def item_6(qty, price):
+51:def item_7(qty, price):
+58:def item_8(qty, price):
+65:def item_9(qty, price):
+72:def item_10(qty, price):
+79:def item_11(qty, price):
+86:def item_12(qty, price):
+93:def item_13(qty, price):
+100:def item_14(qty, price):
+107:def item_15(qty, price):
+114:def item_16(qty, price):
+121:def item_17(qty, price):
+128:def item_18(qty, price):
+135:def item_19(qty, price):
+142:def item_20(qty, price):
+149:def item_21(qty, price):
+156:def item_22(qty, price):
+163:def item_23(qty, price):
+170:def item_24(qty, price):
+177:def item_25(qty, price):
+184:def item_26(qty, price):
+191:def item_27(qty, price):
+198:def item_28(qty, price):
+205:def item_29(qty, price):
+212:def item_30(qty, price):
+219:def item_31(qty, price):
+226:def item_32(qty, price):
+233:def item_33(qty, price):
+240:def item_34(qty, price):
+247:def item_35(qty, price):
+254:def item_36(qty, price):
+261:def item_37(qty, price):
+268:def item_38(qty, price):
+275:def item_39(qty, price):
+282:def item_40(qty, price):
+289:def item_41(qty, price):
+296:def item_42(qty, price):
+303:def item_43(qty, price):
+310:def item_44(qty, price):
+317:def item_45(qty, price):
+324:def item_46(qty, price):
+331:def item_47(qty, price):
+338:def item_48(qty, price):
+345:def item_49(qty, price):
+352:def item_50(qty, price):
+359:def item_51(qty, price):
+366:def item_52(qty, price):
+373:def item_53(qty, price):
+380:def item_54(qty, price):
+387:def item_55(qty, price):
+394:def item_56(qty, price):
+401:def item_57(qty, price):
+408:def item_58(qty, price):
+415:def item_59(qty, price):
+6:        raise ValueError('negative total for item 0')
+13:        raise ValueError('negative total for item 1')
+20:        raise ValueError('negative total for item 2')
+27:        raise ValueError('negative total for item 3')
+34:        raise ValueError('negative total for item 4')
+41:        raise ValueError('negative total for item 5')
+48:        raise ValueError('negative total for item 6')
+55:        raise ValueError('negative total for item 7')
+62:        raise ValueError('negative total for item 8')
+69:        raise ValueError('negative total for item 9')
+76:        raise ValueError('negative total for item 10')
+83:        raise ValueError('negative total for item 11')
+90:        raise ValueError('negative total for item 12')
+97:        raise ValueError('negative total for item 13')
+104:        raise ValueError('negative total for item 14')
+111:        raise ValueError('negative total for item 15')
+118:        raise ValueError('negative total for item 16')
+125:        raise ValueError('negative total for item 17')
+132:        raise ValueError('negative total for item 18')
+139:        raise ValueError('negative total for item 19')
+146:        raise ValueError('negative total for item 20')
+153:        raise ValueError('negative total for item 21')
+160:        raise ValueError('negative total for item 22')
+167:        raise ValueError('negative total for item 23')
+174:        raise ValueError('negative total for item 24')
+181:        raise ValueError('negative total for item 25')
+188:        raise ValueError('negative total for item 26')
+195:        raise ValueError('negative total for item 27')
+202:        raise ValueError('negative total for item 28')
+209:        raise ValueError('negative total for item 29')
+216:        raise ValueError('negative total for item 30')
+223:        raise ValueError('negative total for item 31')
+230:        raise ValueError('negative total for item 32')
+237:        raise ValueError('negative total for item 33')
+244:        raise ValueError('negative total for item 34')
+251:        raise ValueError('negative total for item 35')
+258:        raise ValueError('negative total for item 36')
+265:        raise ValueError('negative total for item 37')
+272:        raise ValueError('negative total for item 38')
+279:        raise ValueError('negative total for item 39')
+286:        raise ValueError('negative total for item 40')
+293:        raise ValueError('negative total for item 41')
+300:        raise ValueError('negative total for item 42')
+307:        raise ValueError('negative total for item 43')
+314:        raise ValueError('negative total for item 44')
+321:        raise ValueError('negative total for item 45')
+328:        raise ValueError('negative total for item 46')
+335:        raise ValueError('negative total for item 47')
+342:        raise ValueError('negative total for item 48')
+349:        raise ValueError('negative total for item 49')
+356:        raise ValueError('negative total for item 50')
+363:        raise ValueError('negative total for item 51')
+370:        raise ValueError('negative total for item 52')
+377:        raise ValueError('negative total for item 53')
+384:        raise ValueError('negative total for item 54')
+391:        raise ValueError('negative total for item 55')
+398:        raise ValueError('negative total for item 56')
+405:        raise ValueError('negative total for item 57')
+412:        raise ValueError('negative total for item 58')
+419:        raise ValueError('negative total for item 59')
+6.75
+> build · deepseek-v4.1-flash
+The file defines 60 functions (`item_0` through `item_59`), and `item_7(3, 2.25)` returns `6.75`.

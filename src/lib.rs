@@ -28,7 +28,7 @@ use cmds::rust::{cargo_cmd, runner};
 use cmds::scala::sbt_cmd;
 use cmds::system::{
     ast_grep_cmd, ctest_cmd, deps, env_cmd, find_cmd, format_cmd, json_cmd, local_llm, log_cmd, ls,
-    pipe_cmd, read, search, summary, tree, wc_cmd,
+    opencode_cmd, pipe_cmd, read, search, summary, tree, wc_cmd,
 };
 
 use anyhow::{Context, Result};
@@ -558,6 +558,13 @@ enum Commands {
     /// Word/line/byte count with compact output (strips paths and padding)
     Wc {
         /// Arguments passed to wc (files, flags like -l, -w, -c)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+
+    /// OpenCode agent CLI: `run` keeps the final answer and errors, other subcommands pass through
+    Opencode {
+        /// Arguments passed to opencode (e.g., run --archived -m <model> "<task>")
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<String>,
     },
@@ -3145,6 +3152,7 @@ fn run_cli() -> Result<i32> {
         }
 
         Commands::Wc { args } => wc_cmd::run(&args, cli.verbose)?,
+        Commands::Opencode { args } => opencode_cmd::run(&args, cli.verbose)?,
 
         Commands::Gain(gain_args) => {
             let GainArgs {
@@ -4075,6 +4083,7 @@ fn is_operational_command(cmd: &Commands) -> bool {
             | Commands::AstGrep { .. }
             | Commands::Wget { .. }
             | Commands::Wc { .. }
+            | Commands::Opencode { .. }
             | Commands::Jest { .. }
             | Commands::Vitest { .. }
             | Commands::Ctest { .. }
@@ -4679,6 +4688,7 @@ mod tests {
             "grep",
             "wget",
             "wc",
+            "opencode",
             "jest",
             "vitest",
             "ctest",
